@@ -6,6 +6,22 @@
 
 ## Step By Step
 
+### Step1: preprocess wiki dataset
+
 ```python
 python wiki-preprocess.py zhwiki-articles.xml.bz2 wiki.zh.text
+```
+
+### Step2: transfer simpled chinese into traditinal chinese
+
+```bash
+sudo opencc -i wiki.zh.text -o wiki.zhTW.text -c s2t
+```
+
+<b style="color:red;">Install Opencc: https://github.com/BYVoid/OpenCC</b>
+
+### Step4: cut sentence into many words
+
+```python
+python cut-word.py
 ```
