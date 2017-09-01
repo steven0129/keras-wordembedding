@@ -1,26 +1,28 @@
-import jieba
+import lib.word as word
+import lib.ml as ml
+import numpy as np
 import csv
 
-jieba.add_word('建議')
-jieba.add_word('現在')
-jieba.add_word('礦泉水')
-jieba.add_word('==')
-jieba.add_word('嘉義')
-jieba.add_word('學長')
-jieba.add_word('哈囉')
-jieba.add_word('右轉')
-jieba.add_word('第一個')
-jieba.add_word('認領')
-jieba.add_word('上課')
-jieba.add_word('腳踏車')
+data, labels = word.trainToken(
+    './data/rawwords.csv', numOfData=1, numOfClass=2)
 
-data = []
+# split the data into a training set and a validation set
+indices = np.arange(data.shape[0])
+np.random.shuffle(indices)
+data = data[indices]
+labels = labels[indices]
+nbValidationSample = int(0.2 * data.shape[0])
 
-with open('./data/rawwords.csv', 'r') as f:
-    for row in csv.reader(f):
-        cutWord = jieba.lcut(row[1])
-        data.append(cutWord)
+Xtrain = data[:-nbValidationSample]
+Ytrain = labels[:-nbValidationSample]
+Xtest = data[:nbValidationSample]
+Ytest = labels[:nbValidationSample]
 
-    f.close()
+# build model
+myModel = ml.dlModel(inputDim=61, activation='softmax',
+                   loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+myModel.fit(Xtrain, Ytrain, epochs=400, validation_split=0.2, verbose=1)
 
-chinese = Word2Vec(data)
+# evaluate model
+loss, accuracy = myModel.evaluate(Xtest, Ytest)
+print(accuracy)
