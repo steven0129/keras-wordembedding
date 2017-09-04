@@ -1,3 +1,4 @@
+from sklearn.model_selection import StratifiedKFold
 import lib.word as word
 import lib.ml as ml
 import numpy as np
@@ -5,24 +6,27 @@ import csv
 
 data, labels = word.trainToken(
     './data/rawwords.csv', numOfData=1, numOfClass=2)
+cvscores = []
 
 # split the data into a training set and a validation set
 indices = np.arange(data.shape[0])
 np.random.shuffle(indices)
-data = data[indices]
-labels = labels[indices]
-nbValidationSample = int(0.2 * data.shape[0])
+X = data[indices]
+Y = labels[indices]
+kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
-Xtrain = data[:-nbValidationSample]
-Ytrain = labels[:-nbValidationSample]
-Xtest = data[:nbValidationSample]
-Ytest = labels[:nbValidationSample]
+for train, test in kfold.split(X, Y):
+    # build model
+    myModel = ml.dlModel(inputDim=data.shape[1], activation='softmax',
+                         loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-# build model
-myModel = ml.dlModel(inputDim=61, activation='softmax',
-                   loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-myModel.fit(Xtrain, Ytrain, epochs=400, validation_split=0.2, verbose=1)
+    # train model
+    myModel.fit(X[train], Y[train], epochs=400,
+                validation_split=0.2, verbose=0)
 
-# evaluate model
-loss, accuracy = myModel.evaluate(Xtest, Ytest)
-print(accuracy)
+    # evaluate model
+    scores = myModel.evaluate(X[test], Y[test], verbose=0)
+    cvscores.append(scores[1] * 100)
+    print("%s: %.f%%" % (myModel.metrics_names[1], scores[1] * 100))
+
+print("%.2f (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
