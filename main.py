@@ -22,7 +22,7 @@ for trainIndex, testIndex in kf.split(X):
 
     # train model
     myModel.fit(X[trainIndex], Y[trainIndex], epochs=400,
-                validation_split=0.2, verbose=1)
+                validation_split=0.2, verbose=0)
 
     # evaluate model
     scores = myModel.evaluate(X[testIndex], Y[testIndex], verbose=0)
