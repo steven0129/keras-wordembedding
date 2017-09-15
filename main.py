@@ -1,4 +1,4 @@
-from sklearn.model_selection import StratifiedKFold, KFold
+from sklearn.model_selection import KFold
 import lib.word as word
 import lib.ml as ml
 import numpy as np
